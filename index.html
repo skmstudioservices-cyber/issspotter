@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ISS Spotter — Where is the Space Station Right Now? (Live)</title>
+<meta name="description" content="Track the International Space Station live on a map — position, altitude, speed, and whether it is over India right now. Spot the ISS tonight.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://issspotter.pages.dev/">
+<meta name="theme-color" content="#0f172a">
+<meta property="og:title" content="ISS Spotter — Track the Space Station Live">
+<meta property="og:description" content="Live ISS position, speed and altitude. Is it over India right now?">
+<meta property="og:type" content="website">
+<meta name="google-site-verification" content="GlkDu5ZL-CyyKjwPSj9d9X3Y2qsHUj_qAwRwxiLr7nI">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebSite","name":"ISS Spotter","url":"https://issspotter.pages.dev/","inLanguage":"en"}
+</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#050b14;color:#e2e8f0;line-height:1.6}
+.wrap{max-width:980px;margin:0 auto;padding:16px}
+h1{font-size:clamp(1.4rem,4.5vw,2rem)}
+.sub{color:#64748b;font-size:.95rem;margin-top:6px;max-width:680px}
+#map{height:420px;border-radius:14px;border:1px solid #1c2c44;margin-top:16px}
+.reads{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:14px}
+.card{background:#0b1626;border:1px solid #1c2c44;border-radius:12px;padding:12px;text-align:center}
+.card .v{font-size:1.4rem;font-weight:800;color:#93c5fd;font-variant-numeric:tabular-nums}
+.card .l{font-size:.7rem;color:#5b7395;text-transform:uppercase;letter-spacing:.1em}
+.in-india{margin-top:14px;padding:14px;border-radius:12px;font-weight:700;text-align:center;font-size:1.05rem;border:1px solid}
+.yes{background:#052e16;border-color:#14532d;color:#4ade80}
+.no{background:#1e293b;border-color:#334155;color:#94a3b8}
+section{padding:18px 0}
+h2{font-size:1.1rem}
+p,li{color:#cbd5e1;font-size:.9rem}
+ul{margin-left:18px}
+.src{color:#3d5273;font-size:.75rem;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>🛰️ ISS Spotter — Live Space Station Tracker</h1>
+  <p class="sub">The International Space Station flies over India several times a day at ~27,600 km/h, 400 km up. This page tracks it live — and tells you when it's over India.</p>
+</header>
+
+<div id="map"></div>
+<div class="reads">
+  <div class="card"><div class="v" id="v-lat">—</div><div class="l">Latitude</div></div>
+  <div class="card"><div class="v" id="v-lon">—</div><div class="l">Longitude</div></div>
+  <div class="card"><div class="v" id="v-alt">—</div><div class="l">Altitude</div></div>
+  <div class="card"><div class="v" id="v-vel">—</div><div class="l">Speed</div></div>
+</div>
+<div id="in-india" class="in-india no">Checking…</div>
+
+<section>
+  <h2>How to spot the ISS from India</h2>
+  <ul>
+    <li>The ISS looks like a <strong>very bright, fast-moving star</strong> — the brightest object in the night sky after the Moon.</li>
+    <li>It rises in the west, crosses the sky in about <strong>3–6 minutes</strong>, and sets in the east.</li>
+    <li>Best seen <strong>just after sunset or just before sunrise</strong> — the sky is dark but the station is still sunlit 400 km up.</li>
+    <li>It moves noticeably faster than an aeroplane and does not blink or flash.</li>
+    <li>No telescope needed — your eyes are enough.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Facts</h2>
+  <ul>
+    <li>Orbits Earth about <strong>16 times a day</strong> — one orbit every ~93 minutes.</li>
+    <li>Crewed continuously since November 2000; typically 7 astronauts aboard.</li>
+    <li>Size of a football field — ~109 m across its solar arrays.</li>
+    <li>Visible from 95% of Earth's inhabited land — including all of India.</li>
+  </ul>
+  <p class="src">Data: wheretheiss.at (free, live) · Map © OpenStreetMap contributors (ODbL). Independent tracker — not affiliated with NASA, Roscosmos, ESA, JAXA or CSA.</p>
+</section>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+var map=L.map("map",{center:[15,75],zoom:2,worldCopyJump:true});
+L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:6,attribution:"&copy; OpenStreetMap"}).addTo(map);
+var mk=null,trail=[];
+function fmt(n,d){return n==null?"—":Number(n).toFixed(d==null?1:d)}
+function upd(d){
+  document.getElementById("v-lat").textContent=fmt(d.latitude,3)+"°";
+  document.getElementById("v-lon").textContent=fmt(d.longitude,3)+"°";
+  document.getElementById("v-alt").textContent=fmt(d.altitude,0)+" km";
+  document.getElementById("v-vel").textContent=fmt(d.velocity,0)+" km/h";
+  var la=d.latitude,lo=d.longitude;
+  var inIn=la>=6&&la<=38&&lo>=68&&lo<=98;
+  var box=document.getElementById("in-india");
+  if(inIn){box.className="in-india yes";box.textContent="🇮🇳 The ISS is over India right now — look up (if it's dark where you are)!"}
+  else{box.className="in-india no";box.textContent="The ISS is elsewhere right now — it crosses India every ~90 minutes."}
+  if(mk){mk.setLatLng([la,lo])}else{mk=L.circleMarker([la,lo],{radius:8,color:"#38bdf8",fillColor:"#38bdf8",fillOpacity:.95}).addTo(map).bindPopup("<strong>ISS</strong> — live position")}
+  trail.push([la,lo]);if(trail.length>120)trail.shift();
+  if(window.trailLine){map.removeLayer(window.trailLine)}
+  window.trailLine=L.polyline(trail,{color:"#38bdf8",weight:1.5,opacity:.5,dashArray:"4 6"}).addTo(map);
+}
+function poll(){fetch("https://api.wheretheiss.at/v1/satellites/25544").then(function(r){return r.json()}).then(upd).catch(function(){});}
+poll();setInterval(poll,8000);
+</script>
+</body>
+</html>
